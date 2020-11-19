@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script>
+      var user = ''
+        $(function() {
+          var socket = io();
+
+          socket.on("connect", function() {
+            user = $("#nameArea").html();
+            socket.emit('login', user);
+          });
+
+          socket.on("users", function(data) {
+            var users = data[0]
+            for (var i = 0; i < users.length; i++) {
+              var user = users[i]
+              var color = data[1][user]
+              $("#users").html('');
+              $("#users").append("<p><span class='name' style='background-color: " + color + "'>" + user + "</span></p>");
+            }
+          });
+
+          socket.on("message", function(data) {
+            if (data.length == 3) {
+              $("#messages").append("<p><span class='name' style='background-color: " + data[0] + "'>"+data[1]+"</span>"+data[2]+"</p>");
+            }
+            else if (data.length == 2) {
+              $("#messages").append("<p><span class='name' style='background-color: darkslategray'>" + data[0] +"</span>" + data[1] + "</p>");
+            }
+            else {
+              $("#messages").append("<p>" + data + "</p>");
+            }
+          });
+
+          $("form").submit(function(e) {
+            e.preventDefault();
+            socket.emit("message", $("#sendArea").val());
+             $("#sendArea").val('');
+          });
+        });
+    </script>
+    <style>
+      body {
+        font: 13px Arial, Helvetica;
+      }
+      form {
+        margin: auto;
+      }
+      #submit {
+        background: #427bf5;
+        border: 0px;
+        color: white;
+        border-radius: 5px;
+        width: 100px;
+        padding: 10px;
+      }
+      .button {
+        background: #427bf5;
+        text-decoration: none;
+        border: 0px;
+        color: white;
+        border-radius: 5px;
+        padding: 6px 10px;
+      }
+      form input {
+        border: 1px solid gray;
+        border-radius: 2px;
+        padding: 10px;
+        width: 420px;
+        margin-right: .5%;
+      }
+      #messages {
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 300px;
+        border: 1px double gray;
+        border-radius: 2px;
+        margin: 0;
+        padding: 10px 0 0 0;
+       }
+      #messages p {
+        padding: 5px 10px;
+        margin: 0;
+      }
+      #messages p:nth-child(even) {
+        background: #ededed;
+      }
+      #messages {
+        margin-bottom: 10px
+      }
+      #chatArea {
+        margin: auto;
+        width: 550px !important;
+      }
+      #m {
+        border: 1px solid gray;
+      }
+      .name {
+        padding: 2px 11px;
+        font-size: 12px;
+        border-radius: 5px;
+        margin-right: 5px;
+        color: white;
+      }
+      #users {
+        margin-top: 10px;
+      }
+      #users * {
+        text-align: center;
+        margin: auto;
+        margin: 5px 10px;
+      }
+      #nameArea {
+        margin-left: 5px;
+      }
+      .rightAlign {
+        float: right;
+        position: relative;
+        bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chatArea">
+      <p>You are<span id="nameArea">{{ username }}</span><a class="button rightAlign" href="{{ url_for('logout') }}">Log out</a></p>
+      <div id="messages"></div>
+      <form method="POST">
+        <input type="text" name="message" id="sendArea"><input type="submit" id="submit" value="Send">
+      </form>
+    </div>
+    <p style="text-align: center;">Online Users</p>
+    <div id="users">
+    </div>
+  </body>
+</html>
