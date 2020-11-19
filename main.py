@@ -70,4 +70,4 @@ def loginMessage(message):
     else:
         return redirect(url_for("login"))
 
-socketio.run(app)
+socketio.run(host='0.0.0.0', port=PORT, debug=False)
