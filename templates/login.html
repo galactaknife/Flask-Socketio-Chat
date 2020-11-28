@@ -3,12 +3,29 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $("form").submit(function(e) {
+          if ($("#nm").val().replace(' ', '') == '') {
+            alert("Enter a username");
+            e.preventDefault();
+          }
+          else if ($("#nm").val().length >= 18) {
+            alert("Max username length: 18 characters.  Your username length: " + $("#nm").val().length + " characters.");
+            e.preventDefault();
+          }
+        });
+      });
+    </script>
     <style>
       #frame {
         margin: 100px;
         border: 2px solid black;
         margin: auto;
-        width: 300px;
+        width: 250px;
         padding: 25px 50px;
         border-radius: 5px;
       }
@@ -31,11 +48,22 @@
   <body>
     <div id="frame">
       {% if flash %}
-        <p>{{ flash }}</p>
+        <p style="margin-top: 0;">{{ flash }}</p>
       {% endif %}
       <h3>Log in</h3>
       <form method="POST">
-        <p><input name="nm" id="nm" type="text" placeholder="Enter a username"></p>
+          <p><label for="rooms">Choose a room: </label>
+          <select id="rooms" name="rooms">
+            {% for i in rooms %}
+              <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+          </select></p>
+          {% if passReq %}
+            <p><input readonly name="nm" autocomplete="off" id="nm" type="text" placeholder="Enter a username" value="{{ passReq }}"></p>
+            <p><input name="pass" id="pass" type="password" placeholder="Enter the password"></p>
+          {% else %}
+            <p><input name="nm" id="nm" autocomplete="off" type="text" placeholder="Enter a username"></p>
+          {% endif %}
         <p><input type="submit" value="Log in" class="button"></p>
       </form>
     </div>

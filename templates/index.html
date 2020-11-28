@@ -3,30 +3,62 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - {{ room }}</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js"></script>
     <script>
-      var user = ''
+        function scroll() {
+          $("#messages").animate({
+            scrollTop: $("#messages").get(0).scrollHeight
+          });
+        }
+
+        function urlify(text) {
+          return text.replace(/(https?:\/\/[^\s]+)/g, function(url) {
+            return "<a href='" + url + "' target='_blank'>" + url + "</a>";
+          });
+        }
+
+        function stripTags(val) {
+          return val.replace(/<details>/ig, '').replace(/<\/details>/ig, '').replace(/<br>/ig, '').replace(/<br \/>/ig, '').replace(/<br\/>/ig, '').replace(/<body>/ig, '').replace(/<\/body>/ig, '').replace(/<table>/ig, '').replace(/<\/table>/ig, '').replace(/<form>/ig, '').replace(/<\/form>/ig, '').replace(/<button>/ig, '').replace(/<\/button>/ig, '').replace(/<script>/ig, '').replace(/<\/script>/ig, '').replace(/onclick/ig, '').replace(/<style>/ig, '').replace(/<\/style>/ig, '').replace(/<div>/ig, '').replace(/<\/div>/ig, '').replace(/<span>/ig, '').replace(/<\/span>/ig, '').replace(/<p>/ig, '').replace(/<\/p>/ig, '');
+        }
+
+        function openFileUpload() {
+          document.getElementById('fileToUpload').click();
+        }
+
         $(function() {
           var socket = io();
 
           socket.on("connect", function() {
-            user = $("#nameArea").html();
+            var user = $("#nameArea").html();
             socket.emit('login', user);
           });
 
+          socket.on("alert", function(data) {
+            alert(data);
+          });
+
           socket.on("users", function(data) {
-            var users = data[0]
+            var users = data[0];
+            $("#users").html('');
+
             for (var i = 0; i < users.length; i++) {
-              var user = users[i]
-              var color = data[1][user]
-              $("#users").html('');
-              $("#users").append("<p><span class='name' style='background-color: " + color + "'>" + user + "</span></p>");
+              var user = users[i];
+              $("#users").append("<p><span class='name' style='background-color:" + JSON.parse(data[1])[user] + "; color: white;'>" + user + "</span></p>");
             }
           });
 
           socket.on("message", function(data) {
-            if (data.length == 3) {
+            if (data.length == 5) {
+              $("#messages").append("<p><span class='info' style='background-color: gainsboro; color: darkred;'>private</span><span class='name' style='background-color: " + data[0] + "'>" + data[1]+"</span><span class='info' style='background-color: gainsboro; color: darkred; font-size: 10px;'>from " + data[4] + "</span>"+data[2]+"</p>");
+            }
+            else if (data.length == 4) {
+              $("#messages").append("<p>"+"<span class='info' style='background-color: gainsboro; color: darkred;'>private</span>"+"<span class='name' style='background-color: " + data[0] + "'>"+data[1]+"</span>"+data[2]+"</p>");
+            }
+            else if (data.length == 3) {
               $("#messages").append("<p><span class='name' style='background-color: " + data[0] + "'>"+data[1]+"</span>"+data[2]+"</p>");
             }
             else if (data.length == 2) {
@@ -35,13 +67,92 @@
             else {
               $("#messages").append("<p>" + data + "</p>");
             }
+            scroll();
           });
 
-          $("form").submit(function(e) {
-            e.preventDefault();
-            socket.emit("message", $("#sendArea").val());
-             $("#sendArea").val('');
+          socket.on("imageBrodcast", function(data) {
+            if (data) {
+              $("#messages").append("<p><span class='name' style='background-color: " + data[0] + "'>"+data[1]+"</span><img class='image' src='" + data[2] +"'></p>");
+              scroll();
+            }
           });
+
+          $("#submitForm").submit(function(e) {
+            e.preventDefault();
+            try {
+              if ($("#sendArea").val() == "// clear") {
+                $("#messages").html("<p><span class='name' style='background-color: darkslategray'>chatbot</span>Chat cleared</p>");
+                $("#sendArea").val('');
+                scroll();
+              }
+              else if ($("#sendArea").val().replace(' ', '') != '') {
+                socket.emit("message", urlify(stripTags($("#sendArea").val())));
+                $("#sendArea").val('');
+              }
+            }
+            catch(err) {
+              $("#logout").click();
+            }
+          });
+
+          $("#imageUpload").submit(function(e) {
+            try {
+              e.preventDefault();
+              var file = document.querySelector('input[type=file]').files[0];
+              $(this)[0].reset();
+              if (file.size > 1800000) {
+                alert("File is too big!  Max file size is 1.8 MB");
+              }
+              else {
+                var reader  = new FileReader();
+                reader.addEventListener("load", function() {
+                  socket.emit("image", reader.result);
+                }, false);
+                if (file) {
+                  reader.readAsDataURL(file);
+                }
+              }
+            }
+            catch(err) {
+              return;
+            }
+          });
+
+          $("#uploadImage").click(function() {
+            if ($("#sendArea").val().length == 0) {
+              openFileUpload();
+            }
+          });
+
+          $("#fileToUpload").change(function() {
+            $("#imageUpload").submit();
+          });
+
+          $("#logout").click(function() {
+            socket.disconnect();
+          });
+
+          $("#sendArea").keyup(function() {
+            if ($(this).val().length > 0) {
+              $("#uploadImage").css("opacity", 0);
+            }
+            else {
+              $("#uploadImage").css("opacity", 0.5);
+            }
+          });
+
+          $(window).bind('beforeunload', function() {
+            socket.disconnect();
+          });
+        });
+
+        $(document).on("click", ".name", function() {
+          if ($("#sendArea").val()[$("#sendArea").val().length-1] == ' ' || $("#sendArea").val()[$("#sendArea").val().length-1] == null) {
+            $("#sendArea").val($("#sendArea").val() + '@' + event.target.innerHTML + ' ');
+          }
+          else {
+            $("#sendArea").val($("#sendArea").val() + " @" + event.target.innerHTML + ' ');
+          }
         });
     </script>
     <style>
@@ -55,9 +166,10 @@
         background: #427bf5;
         border: 0px;
         color: white;
+        font-size: 13px;
         border-radius: 5px;
         width: 100px;
-        padding: 10px;
+        padding: 12px;
       }
       .button {
         background: #427bf5;
@@ -67,12 +179,14 @@
         border-radius: 5px;
         padding: 6px 10px;
       }
+      #submit:hover, .button:hover, button[type="submit"]:hover {
+        cursor: pointer;
+      }
       form input {
         border: 1px solid gray;
         border-radius: 2px;
         padding: 10px;
         width: 420px;
-        margin-right: .5%;
       }
       #messages {
         overflow-y: scroll;
@@ -88,7 +202,7 @@
         margin: 0;
       }
       #messages p:nth-child(even) {
-        background: #ededed;
+        background-color: #ededed;
       }
       #messages {
         margin-bottom: 10px
@@ -97,20 +211,30 @@
         margin: auto;
         width: 550px !important;
       }
+      #sendArea {
+        height: 15px;
+      }
       #m {
         border: 1px solid gray;
       }
-      .name {
+      .name, .info {
         padding: 2px 11px;
         font-size: 12px;
         border-radius: 5px;
         margin-right: 5px;
         color: white;
       }
+      .name:hover {
+        cursor: pointer;
+      }
+      .image {
+        max-width: 250px;
+        max-height: 250px;
+      }
       #users {
         margin-top: 10px;
       }
-      #users * {
+      #users > * {
         text-align: center;
         margin: auto;
         margin: 5px 10px;
@@ -123,18 +247,149 @@
         position: relative;
         bottom: 8px;
       }
+      #content {
+        text-align: center;
+        margin: auto;
+      }
+      table {
+        border-collapse: collapse;
+        margin: auto;
+      }
+      td, th {
+        border: 1px solid black;
+        max-width: 200px;
+        padding: 4px;
+        text-align: left;
+      }
+      button[type="submit"] {
+        background-color: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        position: relative;
+        left: 410px;
+        bottom: 32px;
+      }
+      #uploadImage {
+        opacity: 0.5;
+        width: 25px;
+        height: 25px;
+      }
+      #imageUpload {
+        height: 5px;
+      }
     </style>
   </head>
   <body>
     <div id="chatArea">
-      <p>You are<span id="nameArea">{{ username }}</span><a class="button rightAlign" href="{{ url_for('logout') }}">Log out</a></p>
+      <p>Room: {{ room }}</p>
+      <p>You are<span id="nameArea">{{ username }}</span><a id="logout" class="button rightAlign" href="{{ url_for('logout') }}">Leave room</a></p>
       <div id="messages"></div>
-      <form method="POST">
-        <input type="text" name="message" id="sendArea"><input type="submit" id="submit" value="Send">
+      <form id="submitForm" method="POST">
+        <input type="text" name="message" id="sendArea" placeholder="Enter message here" autocomplete="off" spellcheck="false">
+        <input type="submit" id="submit" value="Send">
+      </form>
+      <form id="imageUpload" method="post" enctype="multipart/form-data">
+        <input type="file" hidden name="fileToUpload" id="fileToUpload" accept="image/x-png,image/gif,image/jpeg">
+        <abbr title="Upload Image">
+          <button type="submit" id="uploadImage">
+            <img src="{{ url_for('static', filename='imageIcon.png')}}" width="25" height="25">
+          </button>
+        </abbr>
       </form>
     </div>
-    <p style="text-align: center;">Online Users</p>
-    <div id="users">
+
+    <p style="text-align: center;">Users in {{ room }}</p>
+    <div id="users"></div>
+    <br />
+
+    <div id="content">
+      <h3>User Commands</h3>
+      <table>
+        <tr>
+          <th>Command</th>
+          <th>Usage</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td>@name message</td>
+          <td>Send private message to one or more users<br />Note: commas optional</td>
+          <td>@user123 hello<br />@user456, hello<br />@user123, @user456, how are you?</td>
+        </tr>
+        <tr>
+          <td>// change</td>
+          <td>Changes your chat display settings</td>
+          <td>// change theme=dark<br />// change theme=light<br /><br />// change color=red<br />// change font=monospace<br />// change font-size=16</td>
+        </tr>
+        <tr>
+          <td>// change default</td>
+          <td>Sets display settings to default</td>
+          <td>// change default</td>
+        </tr>
+        <tr>
+          <td>// clear</td>
+          <td>Clear prior chat messages</td>
+          <td>// clear</td>
+        </tr>
+        <tr>
+          <td>// time</td>
+          <td>Gets date and time</td>
+          <td>// time</td>
+        </tr>
+        <tr>
+          <td>// tell joke</td>
+          <td>Tells a joke</td>
+          <td>// tell joke</td>
+        </tr>
+        <tr>
+          <td>// random num & num</td>
+          <td>Gets random number between interval</td>
+          <td>// random 0 & 6</td>
+        </tr>
+        <tr>
+          <td>// combo name & name</td>
+          <td>Combination calculator</td>
+          <td>// combo user123 & user456</td>
+        </tr>
+      </table>
+      <h3>Admin Commands</h3>
+      <table>
+        <tr>
+          <th>Command</th>
+          <th>Usage</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td>// new room=roomname</td>
+          <td>Creates new chat room</td>
+          <td>// new room=Room 4</td>
+        </tr>
+        <tr>
+          <td>// del room=roomname</td>
+          <td>Deletes chat room</td>
+          <td>// del room=Room 4</td>
+        </tr>
+        <tr>
+          <td>// ban user</td>
+          <td>Bans user from room</td>
+          <td>// ban user123</td>
+        </tr>
+        <tr>
+          <td>// unban user</td>
+          <td>Unbans user from room</td>
+          <td>// unban user123</td>
+        </tr>
+        <tr>
+          <td>// clearbans</td>
+          <td>Clears all bans in room</td>
+          <td>// clearbans</td>
+        </tr>
+        <tr>
+          <td>// bans</td>
+          <td>View all banned users</td>
+          <td>// bans</td>
+        </tr>
+      </table>
     </div>
   </body>
 </html>
