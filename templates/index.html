@@ -4,281 +4,12 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <title>Chat - {{ room }}</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js"></script>
-    <script>
-        function scroll() {
-          $("#messages").animate({
-            scrollTop: $("#messages").get(0).scrollHeight
-          });
-        }
-
-        function urlify(text) {
-          return text.replace(/(https?:\/\/[^\s]+)/g, function(url) {
-            return "<a href='" + url + "' target='_blank'>" + url + "</a>";
-          });
-        }
-
-        function stripTags(val) {
-          return val.replace(/<details>/ig, '').replace(/<\/details>/ig, '').replace(/<br>/ig, '').replace(/<br \/>/ig, '').replace(/<br\/>/ig, '').replace(/<body>/ig, '').replace(/<\/body>/ig, '').replace(/<table>/ig, '').replace(/<\/table>/ig, '').replace(/<form>/ig, '').replace(/<\/form>/ig, '').replace(/<button>/ig, '').replace(/<\/button>/ig, '').replace(/<script>/ig, '').replace(/<\/script>/ig, '').replace(/onclick/ig, '').replace(/<style>/ig, '').replace(/<\/style>/ig, '').replace(/<div>/ig, '').replace(/<\/div>/ig, '').replace(/<span>/ig, '').replace(/<\/span>/ig, '').replace(/<p>/ig, '').replace(/<\/p>/ig, '');
-        }
-
-        function openFileUpload() {
-          document.getElementById('fileToUpload').click();
-        }
-
-        $(function() {
-          var socket = io();
-
-          socket.on("connect", function() {
-            var user = $("#nameArea").html();
-            socket.emit('login', user);
-          });
-
-          socket.on("alert", function(data) {
-            alert(data);
-          });
-
-          socket.on("users", function(data) {
-            var users = data[0];
-            $("#users").html('');
-
-            for (var i = 0; i < users.length; i++) {
-              var user = users[i];
-              $("#users").append("<p><span class='name' style='background-color:" + JSON.parse(data[1])[user] + "; color: white;'>" + user + "</span></p>");
-            }
-          });
-
-          socket.on("message", function(data) {
-            if (data.length == 5) {
-              $("#messages").append("<p><span class='info' style='background-color: gainsboro; color: darkred;'>private</span><span class='name' style='background-color: " + data[0] + "'>" + data[1]+"</span><span class='info' style='background-color: gainsboro; color: darkred; font-size: 10px;'>from " + data[4] + "</span>"+data[2]+"</p>");
-            }
-            else if (data.length == 4) {
-              $("#messages").append("<p>"+"<span class='info' style='background-color: gainsboro; color: darkred;'>private</span>"+"<span class='name' style='background-color: " + data[0] + "'>"+data[1]+"</span>"+data[2]+"</p>");
-            }
-            else if (data.length == 3) {
-              $("#messages").append("<p><span class='name' style='background-color: " + data[0] + "'>"+data[1]+"</span>"+data[2]+"</p>");
-            }
-            else if (data.length == 2) {
-              $("#messages").append("<p><span class='name' style='background-color: darkslategray'>" + data[0] +"</span>" + data[1] + "</p>");
-            }
-            else {
-              $("#messages").append("<p>" + data + "</p>");
-            }
-            scroll();
-          });
-
-          socket.on("imageBrodcast", function(data) {
-            if (data) {
-              $("#messages").append("<p><span class='name' style='background-color: " + data[0] + "'>"+data[1]+"</span><img class='image' src='" + data[2] +"'></p>");
-              scroll();
-            }
-          });
-
-          $("#submitForm").submit(function(e) {
-            e.preventDefault();
-            try {
-              if ($("#sendArea").val() == "// clear") {
-                $("#messages").html("<p><span class='name' style='background-color: darkslategray'>chatbot</span>Chat cleared</p>");
-                $("#sendArea").val('');
-                scroll();
-              }
-              else if ($("#sendArea").val().replace(' ', '') != '') {
-                socket.emit("message", urlify(stripTags($("#sendArea").val())));
-                $("#sendArea").val('');
-              }
-            }
-            catch(err) {
-              $("#logout").click();
-            }
-          });
-
-          $("#imageUpload").submit(function(e) {
-            try {
-              e.preventDefault();
-              var file = document.querySelector('input[type=file]').files[0];
-              $(this)[0].reset();
-              if (file.size > 1800000) {
-                alert("File is too big!  Max file size is 1.8 MB");
-              }
-              else {
-                var reader  = new FileReader();
-                reader.addEventListener("load", function() {
-                  socket.emit("image", reader.result);
-                }, false);
-                if (file) {
-                  reader.readAsDataURL(file);
-                }
-              }
-            }
-            catch(err) {
-              return;
-            }
-          });
-
-          $("#uploadImage").click(function() {
-            if ($("#sendArea").val().length == 0) {
-              openFileUpload();
-            }
-          });
-
-          $("#fileToUpload").change(function() {
-            $("#imageUpload").submit();
-          });
-
-          $("#logout").click(function() {
-            socket.disconnect();
-          });
-
-          $("#sendArea").keyup(function() {
-            if ($(this).val().length > 0) {
-              $("#uploadImage").css("opacity", 0);
-            }
-            else {
-              $("#uploadImage").css("opacity", 0.5);
-            }
-          });
-
-          $(window).bind('beforeunload', function() {
-            socket.disconnect();
-          });
-        });
-
-        $(document).on("click", ".name", function() {
-          if ($("#sendArea").val()[$("#sendArea").val().length-1] == ' ' || $("#sendArea").val()[$("#sendArea").val().length-1] == null) {
-            $("#sendArea").val($("#sendArea").val() + '@' + event.target.innerHTML + ' ');
-          }
-          else {
-            $("#sendArea").val($("#sendArea").val() + " @" + event.target.innerHTML + ' ');
-          }
-        });
-    </script>
-    <style>
-      body {
-        font: 13px Arial, Helvetica;
-      }
-      form {
-        margin: auto;
-      }
-      #submit {
-        background: #427bf5;
-        border: 0px;
-        color: white;
-        font-size: 13px;
-        border-radius: 5px;
-        width: 100px;
-        padding: 12px;
-      }
-      .button {
-        background: #427bf5;
-        text-decoration: none;
-        border: 0px;
-        color: white;
-        border-radius: 5px;
-        padding: 6px 10px;
-      }
-      #submit:hover, .button:hover, button[type="submit"]:hover {
-        cursor: pointer;
-      }
-      form input {
-        border: 1px solid gray;
-        border-radius: 2px;
-        padding: 10px;
-        width: 420px;
-      }
-      #messages {
-        overflow-y: scroll;
-        overflow-x: hidden;
-        height: 300px;
-        border: 1px double gray;
-        border-radius: 2px;
-        margin: 0;
-        padding: 10px 0 0 0;
-       }
-      #messages p {
-        padding: 5px 10px;
-        margin: 0;
-      }
-      #messages p:nth-child(even) {
-        background-color: #ededed;
-      }
-      #messages {
-        margin-bottom: 10px
-      }
-      #chatArea {
-        margin: auto;
-        width: 550px !important;
-      }
-      #sendArea {
-        height: 15px;
-      }
-      #m {
-        border: 1px solid gray;
-      }
-      .name, .info {
-        padding: 2px 11px;
-        font-size: 12px;
-        border-radius: 5px;
-        margin-right: 5px;
-        color: white;
-      }
-      .name:hover {
-        cursor: pointer;
-      }
-      .image {
-        max-width: 250px;
-        max-height: 250px;
-      }
-      #users {
-        margin-top: 10px;
-      }
-      #users > * {
-        text-align: center;
-        margin: auto;
-        margin: 5px 10px;
-      }
-      #nameArea {
-        margin-left: 5px;
-      }
-      .rightAlign {
-        float: right;
-        position: relative;
-        bottom: 8px;
-      }
-      #content {
-        text-align: center;
-        margin: auto;
-      }
-      table {
-        border-collapse: collapse;
-        margin: auto;
-      }
-      td, th {
-        border: 1px solid black;
-        max-width: 200px;
-        padding: 4px;
-        text-align: left;
-      }
-      button[type="submit"] {
-        background-color: transparent;
-        border: 0;
-        padding: 0;
-        margin: 0;
-        position: relative;
-        left: 410px;
-        bottom: 32px;
-      }
-      #uploadImage {
-        opacity: 0.5;
-        width: 25px;
-        height: 25px;
-      }
-      #imageUpload {
-        height: 5px;
-      }
-    </style>
+    <script src="{{ url_for('static', filename='main.js')}}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
   </head>
   <body>
     <div id="chatArea">
@@ -287,7 +18,7 @@
       <div id="messages"></div>
       <form id="submitForm" method="POST">
         <input type="text" name="message" id="sendArea" placeholder="Enter message here" autocomplete="off" spellcheck="false">
-        <input type="submit" id="submit" value="Send">
+        <input type="submit" id="submit" value="Send" class="button">
       </form>
       <form id="imageUpload" method="post" enctype="multipart/form-data">
         <input type="file" hidden name="fileToUpload" id="fileToUpload" accept="image/x-png,image/gif,image/jpeg">
@@ -298,11 +29,9 @@
         </abbr>
       </form>
     </div>
-
     <p style="text-align: center;">Users in {{ room }}</p>
     <div id="users"></div>
     <br />
-
     <div id="content">
       <h3>User Commands</h3>
       <table>
@@ -314,42 +43,42 @@
         <tr>
           <td>@name message</td>
           <td>Send private message to one or more users<br />Note: commas optional</td>
-          <td>@user123 hello<br />@user456, hello<br />@user123, @user456, how are you?</td>
+          <td><button class="command">@demo hello</button><br /><button class="command">@demo @demo2 hello</button></td>
         </tr>
         <tr>
           <td>// change</td>
           <td>Changes your chat display settings</td>
-          <td>// change theme=dark<br />// change theme=light<br /><br />// change color=red<br />// change font=monospace<br />// change font-size=16</td>
+          <td><button class="command">// change theme=dark</button><br /><button class="command">// change theme=light</button><br /><button class="command">// change color=red</button><br /><button class="command">// change font=monospace</button><br /><button class="command">// change font-size=16</button></td>
         </tr>
         <tr>
           <td>// change default</td>
           <td>Sets display settings to default</td>
-          <td>// change default</td>
+          <td><button class="command">// change default</button></td>
         </tr>
         <tr>
           <td>// clear</td>
-          <td>Clear prior chat messages</td>
-          <td>// clear</td>
+          <td>Clears prior chat messages</td>
+          <td><button class="command">// clear</button></td>
         </tr>
         <tr>
           <td>// time</td>
           <td>Gets date and time</td>
-          <td>// time</td>
+          <td><button class="command">// time</button></td>
         </tr>
         <tr>
           <td>// tell joke</td>
           <td>Tells a joke</td>
-          <td>// tell joke</td>
+          <td><button class="command">// tell joke</button></td>
         </tr>
         <tr>
           <td>// random num & num</td>
           <td>Gets random number between interval</td>
-          <td>// random 0 & 6</td>
+          <td><button class="command">// random 0 & 6</button></td>
         </tr>
         <tr>
           <td>// combo name & name</td>
           <td>Combination calculator</td>
-          <td>// combo user123 & user456</td>
+          <td><button class="command">// combo user123 & user456</button></td>
         </tr>
       </table>
       <h3>Admin Commands</h3>
@@ -362,32 +91,32 @@
         <tr>
           <td>// new room=roomname</td>
           <td>Creates new chat room</td>
-          <td>// new room=Room 4</td>
+          <td><button class="command">// new room=Room 4</button></td>
         </tr>
         <tr>
           <td>// del room=roomname</td>
           <td>Deletes chat room</td>
-          <td>// del room=Room 4</td>
+          <td><button class="command">// del room=Room 4</button></td>
         </tr>
         <tr>
           <td>// ban user</td>
           <td>Bans user from room</td>
-          <td>// ban user123</td>
+          <td><button class="command">// ban user123</button></td>
         </tr>
         <tr>
           <td>// unban user</td>
           <td>Unbans user from room</td>
-          <td>// unban user123</td>
+          <td><button class="command">// unban user123</button></td>
         </tr>
         <tr>
           <td>// clearbans</td>
           <td>Clears all bans in room</td>
-          <td>// clearbans</td>
+          <td><button class="command">// clearbans</button></td>
         </tr>
         <tr>
           <td>// bans</td>
           <td>View all banned users</td>
-          <td>// bans</td>
+          <td><button class="command">// bans</button></td>
         </tr>
       </table>
     </div>

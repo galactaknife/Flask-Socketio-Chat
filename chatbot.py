@@ -22,7 +22,6 @@ def analyze(message, name):
             msg = list(msg.split('&'))
             try:
                 new = [int(msg[0]), int(msg[1])]
-                print(new)
                 if abs(max(new) - min(new)) >= 500:
                     return "Max number difference is 500.  Your difference is " + str(abs(max(new) - min(new)))
                 else:
@@ -45,7 +44,7 @@ def analyze(message, name):
         # Sets settings to default
         if not len(msg) == 2:
             if "default" in message:
-                return "<style>body {color: black !important; background-color: white;} #messages p:nth-child(even) {background-color: #ededed;} #sendArea {background-color: white !important; color: black;} td, th { border: 1px solid black;} #messages p { color: black; font-family: Helvetica; font-size: 13px;} #uploadImage { filter: invert(0%); }</style>Reset your settings to default", "update"
+                return "<style>body {color: black !important; background-color: white;} #messages p:nth-child(even) {background-color: #ededed;} #sendArea {background-color: white !important; color: black;} td, th { border: 1px solid black;} #messages p { color: black; font-family: Helvetica; font-size: 13px;} #uploadImage { filter: invert(0%); } .command { background-color: #ebebeb !important; color: black; border-color: #dbdbdb; }</style>Reset your settings to default", "update"
             return "Specify a valid changable element", "update"
         # Changes values
         elif "color" in message:
@@ -60,9 +59,9 @@ def analyze(message, name):
         # Changes theme
         elif "theme" in message:
             if "dark" in message:
-                return "<style>body {color: gainsboro !important; background-color: #1f1f1f} #messages p:nth-child(even) {background-color: #3b3b3b;} #sendArea {background-color: #4a4a4a !important; color: white;} td, th { border: 1px solid gainsboro;} #messages p { color: white;} #uploadImage { filter: invert(100%); }</style>Your theme is now dark", "update"
+                return "<style>body {color: gainsboro !important; background-color: #1f1f1f} #messages p:nth-child(even) {background-color: #3b3b3b;} #sendArea {background-color: #4a4a4a !important; color: white;} td, th { border: 1px solid gainsboro;} #messages p { color: white;} #uploadImage { filter: invert(100%); } .command { background-color: #2e2e2e !important; color: white; border-color: #4d4d4d; }</style>Your theme is now dark", "update"
             elif "light" in message:
-                return "<style>body {color: black !important; background-color: white} #messages p:nth-child(even) {background-color: #ededed;} #sendArea {background-color: white !important; color: black;} td, th { border: 1px solid black;} #messages p { color: black;} #uploadImage { filter: invert(0%); }</style>Your theme is now light", "update"
+                return "<style>body {color: black !important; background-color: white} #messages p:nth-child(even) {background-color: #ededed;} #sendArea {background-color: white !important; color: black;} td, th { border: 1px solid black;} #messages p { color: black;} #uploadImage { filter: invert(0%); } .command { background-color: #ebebeb !important; color: black; border-color: #dbdbdb; }</style>Your theme is now light", "update"
             return "Invalid theme.  Valid themes are dark and light"
         return "Specify a valid changable element", "update"
     return "Not a command"

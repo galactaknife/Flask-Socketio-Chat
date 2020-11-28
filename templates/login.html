@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
       $(document).ready(function() {
-        $("form").submit(function(e) {
+        $("#loginForm").submit(function(e) {
           if ($("#nm").val().replace(' ', '') == '') {
             alert("Enter a username");
             e.preventDefault();
@@ -36,12 +36,15 @@
         margin-top: 0;
       }
       .button {
-        background: #427bf5;
+        background-color: #427bf5;
         text-decoration: none;
         border: 0px;
         color: white;
         border-radius: 5px;
         padding: 6px 10px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
       }
     </style>
   </head>
@@ -51,7 +54,7 @@
         <p style="margin-top: 0;">{{ flash }}</p>
       {% endif %}
       <h3>Log in</h3>
-      <form method="POST">
+      <form method="POST" id="loginForm">
           <p><label for="rooms">Choose a room: </label>
           <select id="rooms" name="rooms">
             {% for i in rooms %}
