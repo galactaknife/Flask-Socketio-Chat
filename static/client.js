@@ -70,7 +70,7 @@ function openFileUpload() {
   $("#submitForm").submit(function(e) {
     e.preventDefault();
     try {
-      if ($("#sendArea").val().includes("clear") > 0 && $("#sendArea").val().includes("//") > 0) {
+      if ($("#sendArea").val().includes("clear") > 0 && $("#sendArea").val().includes("//") > 0 && $("#sendArea").val().includes("bans") <= 0) {
         $("#messages").html("<p><span class='name' style='background-color: darkslategray'>chatbot</span>Chat cleared</p>");
         $("#sendArea").val('');
         scroll();

@@ -1,13 +1,14 @@
 from flask import Flask, redirect, url_for, render_template, request, session, Markup
 from flask_socketio import SocketIO, emit, join_room, leave_room, disconnect
 import random, json
-import eventlet
+from flask_cors import CORS, cross_origin
 import chatbot as cb
 
 # Initialize app
 app = Flask(__name__)
+cors = CORS(app)
 app.secret_key = "tan the man"
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Holds all rooms and room data
 rooms = {
@@ -33,7 +34,7 @@ addedRooms = []
 # Holds name of user and what room they're in
 userRoom = {}
 
-@app.route('/')
+@app.route('/', methods=["POST", "GET"])
 def index():
     try:
         # If user is logged in, send to chat page
@@ -245,4 +246,4 @@ def image(data):
     emit("imageBrodcast", [rooms[userRoom[session["user"]]]["colors"][session["user"]], session["user"], data], broadcast=True, namespace='/', room=userRoom[session["user"]])
 
 # Runs app on deployment server
-eventlet.wsgi.server(eventlet.listen(("0.0.0.0", 5000)), app)
+socketio.run(app, host="0.0.0.0", port=5000)
