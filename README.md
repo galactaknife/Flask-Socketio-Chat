@@ -39,7 +39,7 @@ They can be installed by using the following commands in console:
 
 <code>pip install gevent-websocket</code>
 
-Then run the app by using <code>python main.py</code> and it should use eventlet or gevent, whichever is installed.
+Then run the app by using <code>python main.py</code> and it should automatically use eventlet or gevent, whichever is installed.
 
 ## Miscellaneous
 
