@@ -3,6 +3,21 @@
 A simple web chat created using Python Flask and socket.io.  
 ICS final project.
 
+## Some features
+
+<ul>
+  <li>Log in and log out messages</li>
+  <li>Multiple rooms</li>
+  <li>Private messaging</li>
+  <li>Images</li>
+  <li>Admin account</li>
+  <ul>
+    <li>Banning users</li>
+    <li>Add and delete rooms</li>
+  </ul>
+  <li>Customizable themes</li>
+</ul>
+
 ## Running the app
 
 In order to run, install flask, flask-socketio, and flask_cors.
