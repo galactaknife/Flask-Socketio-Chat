@@ -1,7 +1,7 @@
 from flask import Flask, redirect, url_for, render_template, request, session, Markup
 from flask_socketio import SocketIO, emit, join_room, leave_room, disconnect
+from flask_cors import CORS
 import random, json
-from flask_cors import CORS, cross_origin
 import chatbot as cb
 
 # Initialize app
@@ -149,6 +149,9 @@ def message(message):
                             if i not in sentTo and not i[1:] == session["user"]:
                                 if i[1:] in userRoom.keys() and not i[1:] in rooms[userRoom[session["user"]]]["users"].values():
                                     sentTo.append(i)
+                                    if session["user"] in rooms[userRoom[i[1:]]]["banned"]:
+                                        emit("message", ["darkslategray", "chatbot", "Can't send message to " + i[1:] + " (" + userRoom[i[1:]] + "), you are banned from that room"], broadcast=True, namespace='/', room=session["user"])
+                                        continue
                                     emit("message", [rooms[userRoom[session["user"]]]["colors"][session["user"]], session["user"], message, "private", userRoom[session["user"]]], namespace='/', room=i[1:])
                                 elif i[1:] in userRoom.keys():
                                     sentTo.append(i)
@@ -163,7 +166,9 @@ def message(message):
                 emit("message", [rooms[userRoom[session["user"]]]["colors"][session["user"]], session["user"], message], broadcast=True, namespace='/', room=userRoom[session["user"]])
                 newRoom = list(message.split('='))[1]
                 # If room doesn't exist, create new room
-                if not newRoom in addedRooms:
+                if newRoom in userRoom.keys():
+                    emit("message", ["chatbot", "A user exists with name " + newRoom + "."], broadcast=True, namespace='/', room=userRoom[session["user"]])
+                elif not newRoom in addedRooms:
                     addedRooms.append(newRoom)
                     rooms[newRoom] = {"users" : {}, "colors" : {}, "banned" : []}
                     emit("message", ["chatbot", "Created room " + newRoom], broadcast=True, namespace='/', room=userRoom[session["user"]])
@@ -238,12 +243,13 @@ def message(message):
     # If user disconnected and is still on tab, notify them to refresh
     except:
         emit("alert", "Session expired.  Reload page to send messages.", namespace='/')
+        # Ensure that they are actually disconnected
         disconnect()
 
-# Special case for images
+# Special broadcast for base64 images
 @socketio.on("image")
 def image(data):
     emit("imageBrodcast", [rooms[userRoom[session["user"]]]["colors"][session["user"]], session["user"], data], broadcast=True, namespace='/', room=userRoom[session["user"]])
 
-# Runs app on deployment server
+# Runs app on server.  I am using gevent and gevent-websocket for the deployment server
 socketio.run(app, host="0.0.0.0", port=5000)

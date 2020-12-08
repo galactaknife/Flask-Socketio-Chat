@@ -31,13 +31,17 @@ def analyze(message, name):
         else:
             return "Missing '&'"
     elif "about" in message and "you" in message:
-        return "I, chatbot, was created to monitor this chat"
+        return "I was created to monitor this chat"
     elif "joke" in message and "tell" in message:
         return random.choice(["Your life", "When life gives you melons, you're probably dyslexic", "I asked my North Korean friend how it was up there, he said he couldn't complain.", "Whiteboards are remarkable", "I want to die peacefully like my grandfather.  Not screaming and yelling like the passengers in his car.", "I have the heart of a lion and a lifetime ban from the Toronto Zoo", "An apple a day keeps the doctor away, only if you aim it well."])
     # Sends image
     elif "image" in message:
         msg = str(message).replace("image", '').replace("//", '', 1).replace(' ', '')
         return "<img width='200' src='"+ msg +"' alt='Image not found'>"
+    elif "ban" in message and "chatbot" in message:
+        return "Can't ban chatbot"
+    elif "ban" in message:
+        return "You don't have permission to ban"
     # Changes display settings
     elif "change" in message:
         msg = list(message.split('='))
@@ -70,7 +74,7 @@ def comboCalc(name1, name2):
   # Checks if combination already exists
   for combo in combinations:
     if name1 in combo["names"] and name2 in combo["names"]:
-      return "Match data for" + combo["names"][0] + " and " + combo["names"][1] + ": " + str(combo["calc"]) + '%'
+      return "Match data for " + combo["names"][0] + " and " + combo["names"][1] + ": " + str(combo["calc"]) + '%'
   # If not, create new combination
   new = {"names" : [name1, name2], "calc" : random.choice(list(range(0, 100)))}
   combinations.append(new)

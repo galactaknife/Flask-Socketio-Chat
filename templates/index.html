@@ -18,7 +18,7 @@
       <p>You are<span id="nameArea">{{ username }}</span><a id="logout" class="button rightAlign" href="{{ url_for('logout') }}">Leave room</a></p>
       <div id="messages"></div>
       <form id="submitForm" method="POST">
-        <input type="text" name="message" id="sendArea" placeholder="Enter message here" autocomplete="off" spellcheck="false">
+        <input type="text" name="message" id="sendArea" placeholder="Enter message here" autocomplete="off" spellcheck="false" maxlength="280">
         <input type="submit" id="submit" value="Send" class="button">
       </form>
       <form id="imageUpload" method="post" enctype="multipart/form-data">

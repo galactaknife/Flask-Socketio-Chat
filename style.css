@@ -1,0 +1,154 @@
+body {
+  font: 13px Arial, Helvetica;
+}
+form {
+  margin: auto;
+}
+#submit {
+  background: #427bf5;
+  border: 0px;
+  color: white;
+  font-size: 13px;
+  border-radius: 5px;
+  width: 100px;
+  padding: 12px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+.button {
+  background-color: #427bf5;
+  text-decoration: none;
+  border: 0px;
+  color: white;
+  border-radius: 5px;
+  padding: 6px 10px;
+}
+#submit:hover, .button:hover, button[type="submit"]:hover {
+  cursor: pointer;
+}
+form input {
+  border: 1px solid gray;
+  border-radius: 2px;
+  padding: 10px;
+  width: 420px;
+}
+#messages {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 300px;
+  border: 1px double gray;
+  border-radius: 2px;
+  margin: 0;
+  padding: 10px 0 0 0;
+ }
+#messages p {
+  padding: 5px 10px;
+  margin: 0;
+}
+#messages p:nth-child(even) {
+  background-color: #ededed;
+}
+#messages {
+  margin-bottom: 10px
+}
+#chatArea {
+  margin: auto;
+  width: 550px !important;
+}
+#sendArea {
+  height: 15px;
+}
+#m {
+  border: 1px solid gray;
+}
+.name, .info {
+  padding: 2px 11px;
+  font-size: 12px;
+  border-radius: 5px;
+  margin-right: 5px;
+  color: white;
+}
+.name:hover {
+  cursor: pointer;
+}
+.image {
+  max-width: 250px;
+  max-height: 250px;
+}
+#users {
+  margin-top: 10px;
+}
+#users > * {
+  text-align: center;
+  margin: auto;
+  margin: 5px 10px;
+}
+#nameArea {
+  margin-left: 5px;
+}
+.rightAlign {
+  float: right;
+  position: relative;
+  bottom: 8px;
+}
+.command:hover {
+  cursor: pointer;
+}
+#content {
+  text-align: center;
+  margin: auto;
+}
+table {
+  border-collapse: collapse;
+  margin: auto;
+}
+td, th {
+  border: 1px solid black;
+  max-width: 200px;
+  padding: 4px;
+  text-align: left;
+}
+button[type="submit"] {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  left: 410px;
+  bottom: 32px;
+}
+#uploadImage {
+  opacity: 0.5;
+  width: 25px;
+  height: 25px;
+}
+#imageUpload {
+  height: 5px;
+}
+@media screen and (max-width: 555px) {
+  #chatArea {
+    width: 90% !important;
+  }
+  form input[type="text"] {
+    width: 65%;
+  }
+  #submit {
+    width: 25%;
+  }
+  button[type="submit"] {
+    left: 62%;
+  }
+}
+.command {
+  margin-bottom: 1px;
+  padding: 2px 6px;
+  background-color: #ebebeb;
+  color: black;
+  border-radius: 3px;
+  border: 1px solid #dbdbdb;
+}
+.command:hover {
+  cursor: pointer;
+  filter: brightness(95%);
+}
